@@ -1,15 +1,21 @@
 import * as esbuild from "esbuild";
-import * as fs from "fs";
 import * as path from "path";
+import * as fs from "fs";
+import { fileURLToPath } from "url";
 
 const isProduction = process.argv.includes("--production");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Read the Angular bundle and convert to a module
-const angularBundlePath = path.resolve("dist/angular-ui.js");
-let angularBundle = "";
-if (fs.existsSync(angularBundlePath)) {
-  angularBundle = fs.readFileSync(angularBundlePath, "utf-8");
-}
+const angularAppPath = path.resolve(__dirname, './src/angular/dist/synapse-angular/browser/main.js');
+
+const angularPlugin = {
+  name: "angular-app-resolver",
+  setup(build) {
+    build.onResolve({ filter: /^angular-app$/ }, args => ({
+      path: angularAppPath
+    }));
+  }
+};
 
 esbuild.build({
   entryPoints: ["src/main.ts"],
@@ -23,21 +29,7 @@ esbuild.build({
   banner: {
     js: "// @ts-nocheck\n",
   },
-  plugins: [
-    {
-      name: "angular-bundle",
-      setup(build) {
-        build.onResolve({ filter: /^angular-ui-bundle$/ }, () => ({
-          path: "angular-ui-bundle",
-          namespace: "angular-bundle",
-        }));
-        build.onLoad({ filter: /^angular-ui-bundle$/, namespace: "angular-bundle" }, () => ({
-          contents: `export const angularBundle = ${JSON.stringify(angularBundle)};`,
-          loader: "js",
-        }));
-      },
-    },
-  ],
+  plugins: [angularPlugin]
 }).catch((e) => {
   console.error(e);
   process.exit(1);

@@ -1,27 +1,16 @@
 import { Modal } from 'obsidian';
-import { angularBundle } from 'angular-ui-bundle';
+import { bootstrapAngular } from 'angular-app';
 
 export class AngularModal extends Modal {
-    private scriptInjected = false;
+    private appRef: any = null;
 
-    constructor(app: any) {
-        super(app);
-    }
-
-    onOpen() {
-        this.contentEl.createEl('app-root');
-        this.injectAngularBundle();
-    }
-
-    private injectAngularBundle(): void {
-        if (this.scriptInjected) return;
-        const script = document.createElement('script');
-        script.textContent = angularBundle;
-        document.head.appendChild(script);
-        this.scriptInjected = true;
+    async onOpen() {
+        const root = this.contentEl.createEl('app-root');
+        this.appRef = await bootstrapAngular(root);
     }
 
     onClose() {
-        this.contentEl.querySelector('app-root')?.remove();
+        this.appRef?.destroy();
+        this.appRef = null;
     }
 }
