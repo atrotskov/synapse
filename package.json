@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build:angular": "cd src/angular && ng build --configuration=production",
-    "build:angular:bundle": "cd src/angular && node -e \"const esbuild = require('esbuild'); const fs = require('fs'); const files = fs.readdirSync('dist/synapse-angular/browser'); const mainFile = files.find(f => f.startsWith('main-') && f.endsWith('.js')); esbuild.buildSync({ entryPoints: ['dist/synapse-angular/browser/' + mainFile], bundle: true, platform: 'browser', outfile: '../../dist/angular-ui.js', format: 'iife', minify: true });\"",
+    "build:angular:bundle": "cd src/angular/dist/synapse-angular/browser && npx esbuild main.js --bundle --platform=browser --outfile=../../../../../dist/angular-ui.js --format=iife --minify",
     "build:plugin": "node esbuild.config.mjs --production",
-    "build": "npm run build:angular && npm run build:angular:bundle && npm run build:plugin && cp manifest.json styles.css dist/"
+    "build": "npm run build:angular && npm run build:angular:bundle && npm run build:plugin && cp manifest.json styles.css dist/ && rm dist/angular-ui.js"
   },
   "keywords": ["obsidian", "vocabulary", "learning", "spaced-repetition", "fsrs"],
   "license": "MIT",
