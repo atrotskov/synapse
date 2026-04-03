@@ -1,0 +1,20 @@
+<div class="flashcard-container">
+  <div class="flashcard" (click)="flip()">
+    @if (!isFlipped()) {
+    <div class="card-front">
+      <span class="label">Front</span>
+      <div class="content">{{ front() }}</div>
+    </div>
+    } @else {
+    <div class="card-back">
+      <span class="label">Back</span>
+      <div class="content">{{ back() }}</div>
+    </div>
+    }
+  </div>
+  <div class="controls">
+    <button (click)="previous()" [disabled]="currentIndex() === 0">Previous</button>
+    <span class="counter">{{ currentIndex() + 1 }} / {{ total() }}</span>
+    <button (click)="next()" [disabled]="currentIndex() === total() - 1">Next</button>
+  </div>
+</div>

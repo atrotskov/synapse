@@ -1,7 +1,7 @@
 import { Modal } from 'obsidian';
 import { bootstrapAngular } from 'angular-app';
 
-export class AngularModal extends Modal {
+export class SynapseModal extends Modal {
     private appRef: any = null;
 
     async onOpen() {
