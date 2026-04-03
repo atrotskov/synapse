@@ -5,7 +5,8 @@ export class AngularModal extends Modal {
     private appRef: any = null;
 
     async onOpen() {
-        const root = this.contentEl.createEl('app-root');
+        const root = document.createElement('app-root');
+        this.contentEl.appendChild(root);
         this.appRef = await bootstrapAngular(root);
     }
 
