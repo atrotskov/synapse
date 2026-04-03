@@ -1,7 +1,9 @@
 import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { AngularModal } from "./views/angular-modal";
 
 export default class Synapse extends Plugin {
   settings!: SynapseSettings;
+  private angularModal: AngularModal | null = null;
 
   async onload() {
     console.log("Synapse: Loading plugin...");
@@ -22,11 +24,29 @@ export default class Synapse extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: "open-angular-ui",
+      name: "Open Angular Flashcards",
+      callback: () => {
+        this.openAngularModal();
+      },
+    });
+
     console.log("Synapse: Plugin loaded!");
   }
 
   onunload() {
+    if (this.angularModal) {
+      this.angularModal.close();
+    }
     console.log("Synapse: Plugin unloaded");
+  }
+
+  private openAngularModal() {
+    if (!this.angularModal) {
+      this.angularModal = new AngularModal(this.app);
+    }
+    this.angularModal.open();
   }
 
   async loadSettings() {
