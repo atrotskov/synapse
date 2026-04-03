@@ -1,0 +1,16 @@
+{
+  "id": "synapse",
+  "name": "Synapse",
+  "version": "0.1.0",
+  "description": "A vocabulary learning plugin with spaced repetition and matching games",
+  "author": "You",
+  "authorUrl": "",
+  "fundingUrl": [],
+  "minAppVersion": "1.0.0",
+  "targetPlatform": "desktop",
+  "isDesktopOnly": false,
+  "js": {
+    "main": "main.js"
+  },
+  "css": "styles.css"
+}
