@@ -8,5 +8,5 @@ import { App } from './app/app';
   const root = document.querySelector<HTMLElement>('app-root');
   if (!root) return;
   const app = await createApplication({ providers: appConfig.providers });
-  app.bootstrap(App, root as HTMLElement);
+  app.bootstrap(App, root);
 })();
