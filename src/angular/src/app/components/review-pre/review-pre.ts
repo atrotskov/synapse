@@ -2,17 +2,21 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AppState } from '../../state';
 
 @Component({
-  selector: 'app-statistic',
+  selector: 'app-review-pre',
   standalone: true,
   imports: [],
-  templateUrl: './statistic.html',
-  styleUrl: './statistic.css',
+  templateUrl: './review-pre.html',
+  styleUrl: './review-pre.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StatisticComponent {
+export class ReviewPreComponent {
   protected state = inject(AppState);
 
-  readonly statistics = this.state.statistics;
+  readonly dueCount = this.state.dueCount;
+
+  startReview(): void {
+    this.state.setPage('flash-card');
+  }
 
   goBack(): void {
     this.state.setPage('menu');

@@ -1,7 +1,7 @@
 <div class="app-container">
   <header>
     <h1>Synapse</h1>
-    <p class="subtitle">Boost you brain</p>
+    <p class="subtitle">Boost your brain</p>
   </header>
   @switch (currentPage()) {
     @case ('flash-card') {
@@ -13,7 +13,12 @@
     @case ('statistic') {
       <app-statistic />
     }
-
+    @case ('tag-select') {
+      <app-tag-select />
+    }
+    @case ('review-pre') {
+      <app-review-pre />
+    }
     @default {
       <app-menu />
     }

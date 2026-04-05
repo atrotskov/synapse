@@ -1,0 +1,40 @@
+<div class="tag-select-container">
+  <h2>Practice by Tags</h2>
+  <p class="description">Select one or more tags to practice</p>
+
+  @if (availableTags().length === 0) {
+    <div class="empty-state">
+      <p>No tags available</p>
+      <p class="hint">Add tags to your vocabulary entries to use this feature</p>
+    </div>
+  } @else {
+    <div class="tags-list">
+      @for (tag of availableTags(); track tag) {
+        <button
+          class="tag-item"
+          [class.selected]="isSelected(tag)"
+          (click)="toggleTag(tag)"
+        >
+          <span class="tag-name">{{ tag }}</span>
+          <span class="tag-count">({{ tagEntryCounts()[tag] || 0 }})</span>
+        </button>
+      }
+    </div>
+
+    <div class="selection-info">
+      <span>{{ selectedCount() }} tag{{ selectedCount() === 1 ? '' : 's' }} selected</span>
+    </div>
+
+    <div class="actions">
+      <button
+        class="start-btn"
+        [disabled]="selectedCount() === 0"
+        (click)="startPractice()"
+      >
+        Start Practice ({{ selectedCount() }})
+      </button>
+    </div>
+  }
+
+  <button class="back-btn" (click)="goBack()">Back to Menu</button>
+</div>

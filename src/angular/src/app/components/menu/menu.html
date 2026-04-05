@@ -1,0 +1,57 @@
+<div class="menu-container">
+  <div class="menu-options">
+    <button class="menu-btn" (click)="navigateTo('review-pre')">
+      <span class="icon">📅</span>
+      <span class="text">Review Due</span>
+      <span class="desc">Continue today's practice</span>
+    </button>
+
+    <button class="menu-btn" (click)="navigateTo('tag-select')">
+      <span class="icon">🎯</span>
+      <span class="text">Practice by Tags</span>
+      <span class="desc">Select tags to study</span>
+    </button>
+
+    <button class="menu-btn" (click)="navigateTo('flash-card')">
+      <span class="icon">🃏</span>
+      <span class="text">Spaced Repetition</span>
+      <span class="desc">Flashcard review mode</span>
+    </button>
+
+    <button class="menu-btn" (click)="navigateTo('pair-mode')">
+      <span class="icon">🎮</span>
+      <span class="text">Find a Pair</span>
+      <span class="desc">Matching game mode</span>
+    </button>
+
+    <button class="menu-btn" (click)="navigateTo('statistic')">
+      <span class="icon">📊</span>
+      <span class="text">Statistics</span>
+      <span class="desc">View your progress</span>
+    </button>
+  </div>
+
+  @if (statistics()?.totalWords) {
+    <div class="quick-stats">
+      <h3>Quick Stats</h3>
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat-value">{{ statistics()?.totalWords }}</span>
+          <span class="stat-label">Total Words</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ statistics()?.learnedWords }}</span>
+          <span class="stat-label">Learned</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ statistics()?.learningWords }}</span>
+          <span class="stat-label">Learning</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ statistics()?.newWords }}</span>
+          <span class="stat-label">New</span>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,147 +1,135 @@
-import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { Plugin } from 'obsidian';
 import { SynapseModal } from './views/synapse-modal';
+import { SynapseSettingTab } from './settings';
+import { SynapseSettings, DEFAULT_SETTINGS, Rating } from './types';
+import { VocabularyStore } from './storage/vocabulary-store';
+import { review as fsrsReview, getPreviewIntervals } from './scheduler/fsrs-scheduler';
+import type { FSRSData } from './types';
 
 export default class Synapse extends Plugin {
-    settings!: SynapseSettings;
-    private synapseModal: SynapseModal | null = null;
+  settings!: SynapseSettings;
+  private synapseModal: SynapseModal | null = null;
+  private vocabularyStore!: VocabularyStore;
 
-    async onload() {
-        console.log('Synapse: Loading plugin...');
+  async onload() {
+    console.log('Synapse: Loading plugin...');
 
-        await this.loadSettings();
+    await this.loadSettings();
 
-        this.addSettingTab(new SynapseSettingTab(this.app, this));
+    this.vocabularyStore = new VocabularyStore(this.app, this.settings);
 
-        this.addRibbonIcon('graduation-cap', 'Synapse', () => {
-            this.openModal();
-        });
+    this.addSettingTab(new SynapseSettingTab(this.app, this as any));
 
-        /* this.addCommand({
-      id: "open-angular-ui",
-      name: "Open Angular Flashcards",
-      callback: () => {
-        this.openAngularModal();
+    this.addRibbonIcon('graduation-cap', 'Synapse', () => {
+      this.openModal();
+    });
+
+    this.addCommand({
+      id: 'review-due-cards',
+      name: 'Review Due Cards',
+      callback: async () => {
+        await this.openModalWithMode('flash-card');
       },
-    }); */
+    });
 
-        console.log('Synapse: Plugin loaded!');
+    this.addCommand({
+      id: 'start-matching-game',
+      name: 'Start Matching Game',
+      callback: async () => {
+        await this.openModalWithMode('pair-mode');
+      },
+    });
+
+    this.addCommand({
+      id: 'view-statistics',
+      name: 'View Statistics',
+      callback: async () => {
+        await this.openModalWithMode('statistic');
+      },
+    });
+
+    this.addCommand({
+      id: 'open-vocabulary-file',
+      name: 'Open Vocabulary File',
+      callback: async () => {
+        await this.openVocabularyFile();
+      },
+    });
+
+    console.log('Synapse: Plugin loaded!');
+  }
+
+  onunload() {
+    if (this.synapseModal) {
+      this.synapseModal.close();
+    }
+    console.log('Synapse: Plugin unloaded');
+  }
+
+  private async openModalWithMode(mode: 'flash-card' | 'pair-mode' | 'statistic' | 'menu'): Promise<void> {
+    if (!this.synapseModal) {
+      this.synapseModal = new SynapseModal(this.app, this.settings, (fsrs) => this.getIntervalHints(fsrs));
+    } else {
+      this.synapseModal.updateSettings(this.settings);
     }
 
-    onunload() {
-        if (this.synapseModal) {
-            this.synapseModal.close();
-        }
-        console.log('Synapse: Plugin unloaded');
+    this.synapseModal.open();
+
+    if (mode !== 'menu' && (window as any).SynapseState) {
+      (window as any).SynapseState.targetPage = mode;
+    }
+  }
+
+  private openModal(): void {
+    this.openModalWithMode('menu');
+  }
+
+  private async openVocabularyFile(): Promise<void> {
+    const file = await this.vocabularyStore.getVocabularyFile();
+    if (file) {
+      const leaf = this.app.workspace.getLeaf('tab');
+      await leaf.openFile(file);
+    } else {
+      console.log('No vocabulary file configured');
+    }
+  }
+
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+
+  getIntervalHints(fsrs: FSRSData | undefined): Record<number, number> {
+    return getPreviewIntervals(fsrs);
+  }
+
+  async handleReview(entry: any, rating: Rating): Promise<void> {
+    if (!entry.fsrs) {
+      entry.fsrs = {
+        nextReview: new Date().toISOString().split('T')[0],
+        stability: 0,
+        difficulty: 0,
+        elapsedDays: 0,
+        repetitions: 0,
+        lapses: 0,
+      };
     }
 
-    private openModal() {
-        if (!this.synapseModal) {
-            this.synapseModal = new SynapseModal(this.app);
-        }
-        this.synapseModal.open();
-    }
+    const result = fsrsReview(
+      {
+        nextReview: entry.fsrs.nextReview,
+        stability: entry.fsrs.stability,
+        difficulty: entry.fsrs.difficulty,
+        elapsedDays: entry.fsrs.elapsedDays,
+        repetitions: entry.fsrs.repetitions,
+        lapses: entry.fsrs.lapses,
+      },
+      rating
+    );
 
-    async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-    }
-
-    async saveSettings() {
-        await this.saveData(this.settings);
-    }
-}
-
-interface SynapseSettings {
-    vocabularyFile: string;
-    primaryLanguage: string;
-    dailyReviewLimit: number;
-    matchingGameSize: number;
-    tagsToExclude: string;
-}
-
-const DEFAULT_SETTINGS: SynapseSettings = {
-    vocabularyFile: '',
-    primaryLanguage: 'en',
-    dailyReviewLimit: 20,
-    matchingGameSize: 10,
-    tagsToExclude: '',
-};
-
-class SynapseSettingTab extends PluginSettingTab {
-    plugin: Synapse;
-
-    constructor(app: App, plugin: Synapse) {
-        super(app, plugin);
-        this.plugin = plugin;
-    }
-
-    display(): void {
-        const { containerEl } = this;
-        containerEl.empty();
-        containerEl.createEl('h2', { text: 'Synapse Settings' });
-
-        new Setting(containerEl)
-            .setName('Vocabulary File')
-            .setDesc('Path to your vocabulary markdown file')
-            .addText((text) =>
-                text
-                    .setPlaceholder('Vocabulary/words.md')
-                    .setValue(this.plugin.settings.vocabularyFile)
-                    .onChange(async (value) => {
-                        this.plugin.settings.vocabularyFile = value;
-                        await this.plugin.saveSettings();
-                    }),
-            );
-
-        new Setting(containerEl)
-            .setName('Primary Language')
-            .setDesc('Default source language for UI (ISO 639-1 code)')
-            .addText((text) =>
-                text
-                    .setPlaceholder('en')
-                    .setValue(this.plugin.settings.primaryLanguage)
-                    .onChange(async (value) => {
-                        this.plugin.settings.primaryLanguage = value;
-                        await this.plugin.saveSettings();
-                    }),
-            );
-
-        new Setting(containerEl)
-            .setName('Daily Review Limit')
-            .setDesc('Maximum new cards per day')
-            .addText((text) =>
-                text
-                    .setPlaceholder('20')
-                    .setValue(String(this.plugin.settings.dailyReviewLimit))
-                    .onChange(async (value) => {
-                        this.plugin.settings.dailyReviewLimit = parseInt(value) || 20;
-                        await this.plugin.saveSettings();
-                    }),
-            );
-
-        new Setting(containerEl)
-            .setName('Matching Game Size')
-            .setDesc('Number of pairs per game round')
-            .addText((text) =>
-                text
-                    .setPlaceholder('10')
-                    .setValue(String(this.plugin.settings.matchingGameSize))
-                    .onChange(async (value) => {
-                        this.plugin.settings.matchingGameSize = parseInt(value) || 10;
-                        await this.plugin.saveSettings();
-                    }),
-            );
-
-        new Setting(containerEl)
-            .setName('Tags to Exclude')
-            .setDesc('Comma-separated tags to skip during practice')
-            .addText((text) =>
-                text
-                    .setPlaceholder('exclude,these, tags')
-                    .setValue(this.plugin.settings.tagsToExclude)
-                    .onChange(async (value) => {
-                        this.plugin.settings.tagsToExclude = value;
-                        await this.plugin.saveSettings();
-                    }),
-            );
-    }
+    await this.vocabularyStore.updateEntryFSRS(entry, result);
+  }
 }

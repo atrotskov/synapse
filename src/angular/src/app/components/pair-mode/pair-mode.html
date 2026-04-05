@@ -1,0 +1,95 @@
+@if (!started()) {
+  <div class="start-screen">
+    <h2>Find a Pair</h2>
+    <p>Match words from your source language to their translations</p>
+    @if (state.entries().length > 0) {
+      <button class="start-btn" (click)="startGame()">Start Game</button>
+    } @else {
+      <p class="no-entries">No vocabulary entries available</p>
+    }
+    <button class="back-btn" (click)="goToMenu()">Back to Menu</button>
+  </div>
+}
+
+@if (started() && !complete()) {
+  <div class="game-container">
+    <div class="game-header">
+      <span class="progress">{{ correctCount() }} / {{ totalCount() }} pairs</span>
+      <span class="mistakes">Mistakes: {{ mistakeList().length }}</span>
+    </div>
+
+    <div class="columns">
+      <div class="column source-column">
+        <h3>Source</h3>
+        <div class="cards">
+          @for (card of source(); track card.id) {
+            <button
+              class="card source"
+              [class.selected]="card.isSelected"
+              [class.matched]="card.isMatched"
+              [disabled]="card.isMatched"
+              (click)="selectSource(card)"
+            >
+              {{ card.text }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="column target-column">
+        <h3>Target</h3>
+        <div class="cards">
+          @for (card of target(); track card.id) {
+            <button
+              class="card target"
+              [class.selected]="card.isSelected"
+              [class.matched]="card.isMatched"
+              [disabled]="card.isMatched"
+              (click)="selectTarget(card)"
+            >
+              {{ card.text }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <button class="quit-btn" (click)="resetGame()">Quit Game</button>
+  </div>
+}
+
+@if (complete()) {
+  <div class="results-screen">
+    <h2>Congratulations!</h2>
+    <div class="results">
+      <div class="result-item">
+        <span class="result-label">Pairs Found</span>
+        <span class="result-value">{{ correctCount() }}</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Mistakes</span>
+        <span class="result-value">{{ mistakeList().length }}</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">Accuracy</span>
+        <span class="result-value">{{ accuracy() }}%</span>
+      </div>
+    </div>
+
+    @if (mistakeList().length > 0) {
+      <div class="mistakes-section">
+        <h3>Mistakes Review</h3>
+        <ul>
+          @for (mistake of mistakeList(); track $index) {
+            <li>{{ mistake.source }} ≠ {{ mistake.target }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <div class="actions">
+      <button class="play-again-btn" (click)="startGame()">Play Again</button>
+      <button class="back-btn" (click)="goToMenu()">Back to Menu</button>
+    </div>
+  </div>
+}
