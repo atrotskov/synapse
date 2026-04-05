@@ -5,14 +5,25 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
-    "build": "tsc -noEmit && node esbuild.config.mjs --production && cp manifest.json styles.css dist/"
+    "build:angular": "cd src/angular && ng build --configuration=production",
+    "build:plugin": "node esbuild.config.mjs --production",
+    "build": "npm run build:angular && npm run build:plugin && cp manifest.json styles.css dist/"
   },
-  "keywords": ["obsidian", "vocabulary", "learning", "spaced-repetition", "fsrs"],
+  "keywords": [
+    "obsidian",
+    "vocabulary",
+    "learning",
+    "spaced-repetition",
+    "fsrs"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
     "esbuild": "^0.20.0",
     "obsidian": "^1.0.0",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ts-fsrs": "^5.3.2"
   }
 }

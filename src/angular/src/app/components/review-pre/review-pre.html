@@ -1,0 +1,18 @@
+<div class="review-pre-container">
+  <h2>Review Due</h2>
+
+  <div class="due-info">
+    <span class="due-count">{{ dueCount() }}</span>
+    <span class="due-label">word{{ dueCount() === 1 ? '' : 's' }} ready for review</span>
+  </div>
+
+  <p class="description">Continue your daily practice with spaced repetition</p>
+
+  <div class="actions">
+    <button class="start-btn" (click)="startReview()">
+      Start Review
+    </button>
+  </div>
+
+  <button class="back-btn" (click)="goBack()">Back to Menu</button>
+</div>

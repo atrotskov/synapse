@@ -1,0 +1,242 @@
+.start-screen,
+.results-screen {
+  padding: var(--size-4-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-4-4);
+  text-align: center;
+  min-height: 300px;
+  justify-content: center;
+}
+
+.start-screen h2,
+.results-screen h2 {
+  font-size: var(--font-ui-large);
+  margin: 0;
+}
+
+.start-screen p,
+.results-screen p {
+  font-size: var(--font-ui-medium);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.no-entries {
+  color: var(--text-error);
+}
+
+.game-container {
+  padding: var(--size-4-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-4);
+  height: 100%;
+  min-height: 0;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-ui-medium);
+  color: var(--text-muted);
+}
+
+.progress {
+  font-weight: var(--font-bold);
+  color: var(--text-normal);
+}
+
+.mistakes {
+  color: var(--text-error);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--size-4-4);
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 500px) {
+  .columns {
+    grid-template-columns: 1fr;
+    gap: var(--size-4-3);
+  }
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  min-height: 0;
+}
+
+.column h3 {
+  font-size: var(--font-ui-medium);
+  color: var(--text-muted);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  overflow-y: auto;
+  flex: 1;
+  padding-right: var(--size-4-1);
+}
+
+.card {
+  padding: var(--size-4-3) var(--size-4-4);
+  min-height: 48px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.card:hover:not(:disabled) {
+  background: var(--interactive-hover);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.card.selected {
+  border-color: var(--interactive-accent);
+  background: var(--interactive-hover);
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.card.matched {
+  opacity: 0.5;
+  cursor: default;
+  background: var(--background-secondary);
+}
+
+.card:disabled {
+  cursor: default;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--size-4-4);
+  margin: var(--size-4-4) 0;
+  width: 100%;
+}
+
+@media (max-width: 400px) {
+  .results {
+    grid-template-columns: 1fr;
+    gap: var(--size-4-3);
+  }
+}
+
+.result-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.result-value {
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-bold);
+  color: var(--text-normal);
+}
+
+.result-label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.mistakes-section {
+  width: 100%;
+  text-align: left;
+  padding: var(--size-4-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+}
+
+.mistakes-section h3 {
+  font-size: var(--font-ui-medium);
+  color: var(--text-error);
+  margin: 0 0 var(--size-4-2) 0;
+}
+
+.mistakes-section ul {
+  margin: 0;
+  padding-left: var(--size-4-4);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.mistakes-section li {
+  margin-bottom: var(--size-4-1);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-3);
+  width: 100%;
+  max-width: 300px;
+}
+
+button {
+  padding: var(--size-4-3) var(--size-4-4);
+  min-height: 44px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-bold);
+  transition: background-color 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--interactive-accent-hover);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.back-btn,
+.quit-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.back-btn:hover:not(:disabled),
+.quit-btn:hover:not(:disabled) {
+  background: var(--background-secondary);
+  color: var(--text-normal);
+}
+
+.start-btn,
+.play-again-btn {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}

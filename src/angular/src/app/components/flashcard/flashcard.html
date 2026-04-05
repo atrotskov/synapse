@@ -1,0 +1,58 @@
+<div class="flashcard-container">
+  @if (currentEntry()) {
+    <div class="progress-info">
+      <span class="reviewed-count">{{ reviewedCount() }} reviewed</span>
+    </div>
+
+    <div class="flashcard" (click)="flip()">
+      @if (!isFlipped()) {
+        <div class="card-front">
+          <span class="label">Front</span>
+          <div class="content">{{ getFrontText() }}</div>
+          @if (hasTags()) {
+            <div class="tags">
+              @for (tag of currentEntry()!.tags; track tag) {
+                <span class="tag">{{ tag }}</span>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="card-back">
+          <span class="label">Back</span>
+          <div class="content">{{ getBackText() }}</div>
+        </div>
+      }
+    </div>
+
+    @if (isFlipped()) {
+      <div class="rating-buttons">
+        <span class="rating-label">How well did you know this?</span>
+        <div class="buttons">
+          @for (rating of ratings; track rating) {
+            <div class="rating-option">
+              <button
+                class="rating-btn rating-{{ rating }}"
+                (click)="rate(rating)"
+              >
+                {{ ratingLabels[rating] }}
+              </button>
+              <span class="interval-hint">{{ formatInterval(intervalHints()[rating] || 0) }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="controls">
+      <button (click)="previous()" [disabled]="!hasPrevious()">Previous</button>
+      <span class="counter">{{ currentIndex() + 1 }} / {{ total() }}</span>
+      <button (click)="next()" [disabled]="!hasNext()">Next</button>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <p>No cards to review</p>
+      <p class="hint">Add vocabulary entries to your vocabulary file to start learning</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,20 @@
+.app-container {
+  padding: 20px;
+  text-align: center;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--text-normal);
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}

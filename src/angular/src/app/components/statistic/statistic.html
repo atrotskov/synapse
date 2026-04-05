@@ -1,0 +1,62 @@
+@if (statistics()) {
+  <div class="stats-container">
+    <h2>Your Learning Statistics</h2>
+
+    <div class="stats-overview">
+      <div class="stat-card total">
+        <span class="stat-icon">📚</span>
+        <span class="stat-value">{{ statistics()?.totalWords }}</span>
+        <span class="stat-label">Total Words</span>
+      </div>
+
+      <div class="stat-card learned">
+        <span class="stat-icon">🎓</span>
+        <span class="stat-value">{{ statistics()?.learnedWords }}</span>
+        <span class="stat-label">Mastered</span>
+      </div>
+
+      <div class="stat-card learning">
+        <span class="stat-icon">📖</span>
+        <span class="stat-value">{{ statistics()?.learningWords }}</span>
+        <span class="stat-label">Learning</span>
+      </div>
+
+      <div class="stat-card new">
+        <span class="stat-icon">✨</span>
+        <span class="stat-value">{{ statistics()?.newWords }}</span>
+        <span class="stat-label">New</span>
+      </div>
+    </div>
+
+    @if (statistics()?.retentionRate !== undefined) {
+      <div class="retention-section">
+        <h3>Retention Rate</h3>
+        <div class="retention-bar">
+          <div
+            class="retention-fill"
+            [style.width.%]="(statistics()?.retentionRate || 0) * 100"
+          ></div>
+        </div>
+        <span class="retention-value">{{ ((statistics()?.retentionRate || 0) * 100).toFixed(1) }}%</span>
+      </div>
+    }
+
+    @if (statistics()?.reviewStreak !== undefined) {
+      <div class="streak-section">
+        <h3>Review Streak</h3>
+        <div class="streak-display">
+          <span class="streak-icon">🔥</span>
+          <span class="streak-value">{{ statistics()?.reviewStreak }} days</span>
+        </div>
+      </div>
+    }
+
+    <button class="back-btn" (click)="goBack()">Back to Menu</button>
+  </div>
+} @else {
+  <div class="no-stats">
+    <p>No statistics available yet</p>
+    <p class="hint">Complete some reviews to see your progress</p>
+    <button class="back-btn" (click)="goBack()">Back to Menu</button>
+  </div>
+}

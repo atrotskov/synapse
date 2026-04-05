@@ -1,0 +1,26 @@
+<div class="app-container">
+  <header>
+    <h1>Synapse</h1>
+    <p class="subtitle">Boost your brain</p>
+  </header>
+  @switch (currentPage()) {
+    @case ('flash-card') {
+      <app-flashcard />
+    }
+    @case ('pair-mode') {
+      <app-pair-mode />
+    }
+    @case ('statistic') {
+      <app-statistic />
+    }
+    @case ('tag-select') {
+      <app-tag-select />
+    }
+    @case ('review-pre') {
+      <app-review-pre />
+    }
+    @default {
+      <app-menu />
+    }
+  }
+</div>
