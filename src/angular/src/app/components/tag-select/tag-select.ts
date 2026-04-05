@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { VocabularyService } from '../../services/vocabulary.service';
 import { AppState } from '../../state';
-import { VocabularyEntry } from '../../types';
 
 @Component({
   selector: 'app-tag-select',
@@ -12,34 +12,44 @@ import { VocabularyEntry } from '../../types';
 })
 export class TagSelectComponent {
   protected state = inject(AppState);
+  private vocabularyService = inject(VocabularyService);
 
-  readonly availableTags = this.state.availableTags;
-  readonly tagEntryCounts = this.state.tagEntryCounts;
-  readonly selectedTags = this.state.selectedTags;
+  readonly availableTags = signal<string[]>([]);
+  readonly tagEntryCounts = signal<Record<string, number>>({});
+
   readonly selectedCount = this.state.selectedTagsCount;
 
+  constructor() {
+    this.loadTags();
+  }
+
+  private async loadTags(): Promise<void> {
+    const tags = await this.vocabularyService.getAllTags();
+    const entries = await this.vocabularyService.loadEntries();
+
+    const counts: Record<string, number> = {};
+    for (const tag of tags) {
+      counts[tag] = entries.filter((e) => e.tags.includes(tag)).length;
+    }
+
+    this.availableTags.set(tags);
+    this.tagEntryCounts.set(counts);
+  }
+
   isSelected(tag: string): boolean {
-    return this.selectedTags().includes(tag);
+    return this.state.selectedTags().includes(tag);
   }
 
   toggleTag(tag: string): void {
     this.state.toggleTag(tag);
   }
 
-  selectAll(): void {
-    this.state.setEntriesForTagPractice(this.state.entries());
-  }
-
   startPractice(): void {
-    const selected = this.selectedTags();
+    const selected = this.state.selectedTags();
     if (selected.length === 0) return;
 
-    const allEntries = this.state.entries();
-    const filtered = allEntries.filter((entry: VocabularyEntry) =>
-      entry.tags.some((tag: string) => selected.includes(tag))
-    );
-
-    this.state.setEntriesForTagPractice(filtered);
+    this.state.setPracticeTags(selected);
+    this.state.setPage('flash-card');
   }
 
   goBack(): void {

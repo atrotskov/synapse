@@ -9,7 +9,7 @@
         <div class="card-front">
           <span class="label">Front</span>
           <div class="content">{{ getFrontText() }}</div>
-          @if (currentEntry()?.tags?.length) {
+          @if (hasTags()) {
             <div class="tags">
               @for (tag of currentEntry()!.tags; track tag) {
                 <span class="tag">{{ tag }}</span>

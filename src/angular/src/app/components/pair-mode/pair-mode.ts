@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
+import { VocabularyService } from '../../services/vocabulary.service';
 import { AppState } from '../../state';
 import { VocabularyEntry } from '../../types';
 
@@ -31,6 +32,7 @@ interface GameCard {
 })
 export class PairModeComponent {
   protected state = inject(AppState);
+  private vocabularyService = inject(VocabularyService);
 
   private sourceCards = signal<GameCard[]>([]);
   private targetCards = signal<GameCard[]>([]);
@@ -58,8 +60,8 @@ export class PairModeComponent {
     return Math.round((this.correctCount() / total) * 100);
   });
 
-  startGame(): void {
-    const entries = this.state.entries();
+  async startGame(): Promise<void> {
+    const entries = await this.vocabularyService.getEntriesDueForReview();
     const settings = this.state.settings();
     const gameSize = settings?.matchingGameSize || 10;
     const primaryLang = settings?.primaryLanguage || 'en';

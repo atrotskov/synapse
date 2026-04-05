@@ -1,51 +1,42 @@
-import { App, TFile } from 'obsidian';
-import type { VocabularyEntry, FSRSData, SynapseSettings } from '../types';
-import { parseVocabularyFile, entryToMarkdown } from '../parser/vocabulary-parser';
-import { updateFSRSLine } from '../parser/fsrs-parser';
+import { Injectable, inject } from '@angular/core';
+import { ObsidianService } from './obsidian.service';
+import { SYNAPSE_SETTINGS } from '../app.tokens';
+import { parseVocabularyFile, entryToMarkdown } from '../utils/vocabulary-parser';
+import { updateFSRSLine } from '../utils/fsrs-parser';
+import type { VocabularyEntry, FSRSData, Statistics } from '../types';
 
-export class VocabularyStore {
-  private app: App;
-  private settings: SynapseSettings;
+@Injectable({ providedIn: 'root' })
+export class VocabularyService {
+  private obsidianService = inject(ObsidianService);
+  private settings = inject(SYNAPSE_SETTINGS);
+
   private cache: VocabularyEntry[] | null = null;
   private cacheFilePath: string | null = null;
 
-  constructor(app: App, settings: SynapseSettings) {
-    this.app = app;
-    this.settings = settings;
-  }
-
-  updateSettings(settings: SynapseSettings): void {
-    this.settings = settings;
-    this.invalidateCache();
-  }
-
-  invalidateCache(): void {
+  private invalidateCache(): void {
     this.cache = null;
     this.cacheFilePath = null;
   }
 
-  async getVocabularyFile(): Promise<TFile | null> {
-    if (!this.settings.vocabularyFile) {
-      return null;
-    }
-    return this.app.vault.getAbstractFileByPath(this.settings.vocabularyFile) as TFile | null;
+  async getVocabularyFile(): Promise<string> {
+    return this.settings.vocabularyFile;
   }
 
   async loadEntries(): Promise<VocabularyEntry[]> {
-    const file = await this.getVocabularyFile();
-    if (!file) {
+    const filePath = await this.getVocabularyFile();
+    if (!filePath) {
       return [];
     }
 
-    if (this.cache && this.cacheFilePath === file.path) {
+    if (this.cache && this.cacheFilePath === filePath) {
       return this.cache;
     }
 
-    const content = await this.app.vault.read(file);
+    const content = await this.obsidianService.readFile(filePath);
     const entries = parseVocabularyFile(content);
 
     this.cache = entries;
-    this.cacheFilePath = file.path;
+    this.cacheFilePath = filePath;
 
     return entries;
   }
@@ -87,16 +78,13 @@ export class VocabularyStore {
     });
   }
 
-  async updateEntryFSRS(
-    entry: VocabularyEntry,
-    fsrsData: FSRSData,
-  ): Promise<void> {
-    const file = await this.getVocabularyFile();
-    if (!file) {
+  async updateEntryFSRS(entry: VocabularyEntry, fsrsData: FSRSData): Promise<void> {
+    const filePath = await this.getVocabularyFile();
+    if (!filePath) {
       throw new Error('Vocabulary file not found');
     }
 
-    const content = await this.app.vault.read(file);
+    const content = await this.obsidianService.readFile(filePath);
     const lines = content.split('\n');
     const line = lines[entry.lineIndex];
 
@@ -107,30 +95,30 @@ export class VocabularyStore {
     lines[entry.lineIndex] = updateFSRSLine(line, fsrsData);
     const newContent = lines.join('\n');
 
-    await this.app.vault.modify(file, newContent);
+    await this.obsidianService.writeFile(filePath, newContent);
 
     entry.fsrs = fsrsData;
     entry.rawLine = lines[entry.lineIndex];
   }
 
   async saveEntry(entry: VocabularyEntry): Promise<void> {
-    const file = await this.getVocabularyFile();
-    if (!file) {
+    const filePath = await this.getVocabularyFile();
+    if (!filePath) {
       throw new Error('Vocabulary file not found');
     }
 
-    const content = await this.app.vault.read(file);
+    const content = await this.obsidianService.readFile(filePath);
     const lines = content.split('\n');
-    const markdown = entryToMarkdown(entry);
+    let markdown = entryToMarkdown(entry);
 
     if (entry.fsrs) {
-      markdown + ' ' + this.serializeFSRS(entry.fsrs);
+      markdown = markdown + ' ' + this.serializeFSRS(entry.fsrs);
     }
 
     lines[entry.lineIndex] = markdown;
     const newContent = lines.join('\n');
 
-    await this.app.vault.modify(file, newContent);
+    await this.obsidianService.writeFile(filePath, newContent);
 
     entry.rawLine = markdown;
   }

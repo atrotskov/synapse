@@ -1,12 +1,4 @@
-import type {
-  VocabularyEntry,
-  Translation,
-  Example,
-  ExampleSegment,
-  Forms,
-  Note,
-  Pronunciation,
-} from '../types';
+import type { VocabularyEntry, Translation, Example, ExampleSegment, Forms, Note, Pronunciation } from '../types';
 import { parseFSRS } from './fsrs-parser';
 
 const LANG_TAG_PATTERN = /\(lang:([a-z]{2})\)/i;

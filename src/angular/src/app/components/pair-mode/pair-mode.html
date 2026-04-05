@@ -2,11 +2,7 @@
   <div class="start-screen">
     <h2>Find a Pair</h2>
     <p>Match words from your source language to their translations</p>
-    @if (state.entries().length > 0) {
-      <button class="start-btn" (click)="startGame()">Start Game</button>
-    } @else {
-      <p class="no-entries">No vocabulary entries available</p>
-    }
+    <button class="start-btn" (click)="startGame()">Start Game</button>
     <button class="back-btn" (click)="goToMenu()">Back to Menu</button>
   </div>
 }

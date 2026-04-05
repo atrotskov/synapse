@@ -1,4 +1,6 @@
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { VocabularyService } from '../../services/vocabulary.service';
+import { SchedulerService } from '../../services/scheduler.service';
 import { AppState } from '../../state';
 import { Rating, RATING_LABELS, VocabularyEntry } from '../../types';
 
@@ -11,43 +13,82 @@ import { Rating, RATING_LABELS, VocabularyEntry } from '../../types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FlashcardComponent {
+  private vocabularyService = inject(VocabularyService);
+  private schedulerService = inject(SchedulerService);
   private state = inject(AppState);
 
-  @Output() reviewed = new EventEmitter<{ entry: VocabularyEntry; rating: Rating }>();
+  private _entries = signal<VocabularyEntry[]>([]);
+  private _currentIndex = signal(0);
+  private _isFlipped = signal(false);
+  private _intervalHints = signal<Record<number, number>>({ 1: 0, 2: 0, 3: 0, 4: 0 });
 
-  readonly currentIndex = this.state.currentIndex;
-  readonly total = this.state.totalEntries;
-  readonly isFlipped = this.state.isFlipped;
-  readonly currentEntry = this.state.currentEntry;
-  readonly hasNext = this.state.hasNext;
-  readonly hasPrevious = this.state.hasPrevious;
+  readonly currentEntry = computed(() => {
+    const entries = this._entries();
+    const index = this._currentIndex();
+    return entries[index] ?? null;
+  });
+
+  readonly currentIndex = this._currentIndex.asReadonly();
+  readonly total = computed(() => this._entries().length);
+  readonly isFlipped = this._isFlipped.asReadonly();
+  readonly hasNext = computed(() => this._currentIndex() < this._entries().length - 1);
+  readonly hasPrevious = computed(() => this._currentIndex() > 0);
   readonly reviewedCount = this.state.reviewedCount;
-  readonly intervalHints = this.state.intervalHints;
+  readonly intervalHints = this._intervalHints.asReadonly();
 
   readonly ratings: Rating[] = [1, 2, 3, 4];
   readonly ratingLabels = RATING_LABELS;
 
+  constructor() {
+    this.loadEntries();
+  }
+
+  private async loadEntries(): Promise<void> {
+    const practiceTags = this.state.practiceTags();
+    let entries: VocabularyEntry[];
+
+    if (practiceTags.length > 0) {
+      entries = await this.vocabularyService.getEntriesByTags(practiceTags);
+      this.state.setPracticeTags([]);
+    } else {
+      entries = await this.vocabularyService.getEntriesDueForReview();
+    }
+
+    this._entries.set(entries);
+    this._currentIndex.set(0);
+    this._isFlipped.set(false);
+  }
+
   flip(): void {
-    this.state.flip();
-    if (this.state.isFlipped()) {
+    this._isFlipped.update((v) => !v);
+    if (this._isFlipped()) {
       this.updateIntervalHints();
     }
   }
 
   next(): void {
-    this.state.next();
+    if (this.hasNext()) {
+      this._currentIndex.update((i) => i + 1);
+      this._isFlipped.set(false);
+    }
   }
 
   previous(): void {
-    this.state.previous();
+    if (this.hasPrevious()) {
+      this._currentIndex.update((i) => i - 1);
+      this._isFlipped.set(false);
+    }
   }
 
-  rate(rating: Rating): void {
+  async rate(rating: Rating): Promise<void> {
     const entry = this.currentEntry();
-    if (entry) {
-      this.state.incrementReviewedCount();
-      this.reviewed.emit({ entry, rating });
-    }
+    if (!entry) return;
+
+    this.state.incrementReviewedCount();
+
+    const newFsrs = this.schedulerService.review(entry.fsrs, rating);
+    await this.vocabularyService.updateEntryFSRS(entry, newFsrs);
+
     this.next();
   }
 
@@ -75,10 +116,8 @@ export class FlashcardComponent {
     const entry = this.currentEntry();
     if (!entry) return;
 
-    if (window.SynapseState?.getIntervalHints) {
-      const hints = window.SynapseState.getIntervalHints(entry.fsrs);
-      this.state.setIntervalHints(hints);
-    }
+    const hints = this.schedulerService.getPreviewIntervals(entry.fsrs);
+    this._intervalHints.set(hints);
   }
 
   getFrontText(): string {
@@ -114,5 +153,10 @@ export class FlashcardComponent {
     }
 
     return parts.join('\n') || 'No back content';
+  }
+
+  hasTags(): boolean {
+    const entry = this.currentEntry();
+    return !!(entry && entry.tags && entry.tags.length > 0);
   }
 }
