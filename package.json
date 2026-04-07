@@ -4,7 +4,9 @@
   "description": "A vocabulary learning plugin with spaced repetition and matching games",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "node esbuild.config.mjs",
+    "dev": "concurrently \"npm run watch:angular\" \"npm run watch:plugin\"",
+    "watch:angular": "cd src/angular && npm run watch",
+    "watch:plugin": "node esbuild.config.mjs --watch",
     "build:angular": "cd src/angular && ng build --configuration=production",
     "build:plugin": "node esbuild.config.mjs --production",
     "build": "npm run build:angular && npm run build:plugin && cp manifest.json styles.css dist/"
@@ -19,6 +21,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "concurrently": "^8.2.0",
     "esbuild": "^0.20.0",
     "obsidian": "^1.0.0",
     "typescript": "^5.0.0"

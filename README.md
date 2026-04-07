@@ -95,10 +95,21 @@ build.onLoad({ filter: /^angular-ui-bundle$/ }, () => ({
 
 | Command | Description |
 |---------|-------------|
+| `npm run dev` | Watch mode - runs both Angular and plugin builds, rebuilds on file changes |
 | `npm run build` | Full pipeline: Angular → esbuild bundle → esbuild plugin → copy assets |
 | `npm run build:angular` | Angular CLI production build only |
-| `npm run build:angular:bundle` | Bundle Angular output into IIFE |
-| `npm run dev` | Watch mode (plugin only, no Angular rebuild) |
+| `npm run build:plugin` | esbuild plugin build only |
+| `npm run watch:angular` | Watch Angular files only |
+| `npm run watch:plugin` | Watch plugin files only |
+
+---
+
+## Development Workflow
+
+1. Run `npm run dev` to start both watchers
+2. Edit files in `src/` or `src/angular/src/`
+3. Files rebuild automatically on save
+4. In Obsidian, press `Ctrl+R` to reload the plugin and see changes
 
 ---
 
