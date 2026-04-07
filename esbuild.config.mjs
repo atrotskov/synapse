@@ -4,6 +4,7 @@ import * as fs from "fs";
 import { fileURLToPath } from "url";
 
 const isProduction = process.argv.includes("--production");
+const isWatch = process.argv.includes("--watch");
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const angularAppPath = path.resolve(__dirname, './src/angular/dist/synapse-angular/browser/main.js');
@@ -17,7 +18,7 @@ const angularPlugin = {
   }
 };
 
-esbuild.build({
+const buildOptions = {
   entryPoints: ["src/main.ts"],
   bundle: true,
   platform: "browser",
@@ -30,7 +31,17 @@ esbuild.build({
     js: "// @ts-nocheck\n",
   },
   plugins: [angularPlugin]
-}).catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+};
+
+if (isWatch) {
+  const ctx = await esbuild.context(buildOptions);
+  await ctx.watch();
+  console.log("Watching for changes...");
+} else {
+  try {
+    await esbuild.build(buildOptions);
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
+}

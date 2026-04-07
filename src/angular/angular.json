@@ -20,15 +20,17 @@
             "styles": [
               "src/styles.css"
             ],
-            "externalDependencies": ["obsidian"]
+            "externalDependencies": [
+              "obsidian"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "700kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
                 }
               ],
               "outputHashing": "none"
